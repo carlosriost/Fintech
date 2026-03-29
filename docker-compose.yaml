@@ -1,0 +1,43 @@
+services:
+  api:
+    build: .
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000
+    ports:
+      - "8000:8000"
+    environment:
+      MODEL_SERVICE_URL: http://model-service:8001
+      GRAPH_SERVICE_URL: http://graph-service:8002
+    depends_on:
+      - model-service
+      - graph-service
+
+  model-service:
+    build: .
+    command: uvicorn services.model_service.main:app --host 0.0.0.0 --port 8001
+    expose:
+      - "8001"
+
+  graph-service:
+    build: .
+    command: uvicorn services.graph_service.main:app --host 0.0.0.0 --port 8002
+    expose:
+      - "8002"
+    environment:
+      NEO4J_URI: bolt://neo4j:7687
+      NEO4J_USER: neo4j
+      NEO4J_PASSWORD: 12345678
+    depends_on:
+      - neo4j
+
+  neo4j:
+    image: neo4j:5
+    ports:
+      - "7474:7474"
+      - "7687:7687"
+    environment:
+      NEO4J_AUTH: neo4j/12345678
+    volumes:
+      - neo4j_data:/data
+
+volumes:
+  neo4j_data:
