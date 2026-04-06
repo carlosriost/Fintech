@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fintech Fraud Monitor</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-icon">F</div>
+        <div>
+          <h2>Fintech Monitor</h2>
+          <p>Scoring + Fraude</p>
+        </div>
+      </div>
+
+      <div class="sidebar-card">
+        <h3>Estado del sistema</h3>
+        <div class="mini-status">
+          <span class="dot"></span>
+          <span>Frontend activo</span>
+        </div>
+        <p class="sidebar-note">
+          Este panel consume la API principal del sistema de detección de fraude.
+        </p>
+      </div>
+
+      <div class="sidebar-card">
+        <h3>Acciones rápidas</h3>
+        <button id="loadRiskyBtn" class="ghost-btn">Cargar ejemplo riesgoso</button>
+        <button id="loadSafeBtn" class="ghost-btn">Cargar ejemplo estable</button>
+        <button id="clearBtn" class="ghost-btn danger">Limpiar formulario</button>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <header class="hero">
+        <div>
+          <h1>Sistema de Scoring Crediticio y Detección de Fraude</h1>
+          <p>
+            Panel de consulta para evaluar transacciones usando modelo predictivo
+            y análisis relacional con Neo4j.
+          </p>
+        </div>
+        <div class="hero-badge">
+          <span>API</span>
+          <strong>http://127.0.0.1:8000/predecir</strong>
+        </div>
+      </header>
+
+      <section class="panel">
+        <div class="panel-header">
+          <h2>Ingresar transacción</h2>
+          <p>Completa los datos y envíalos al sistema.</p>
+        </div>
+
+        <form id="fraudForm" class="form-grid">
+          <div class="form-group">
+            <label for="id_usuario">ID Usuario</label>
+            <input type="number" id="id_usuario" value="4" required />
+          </div>
+
+          <div class="form-group">
+            <label for="edad">Edad</label>
+            <input type="number" id="edad" value="25" required />
+          </div>
+
+          <div class="form-group">
+            <label for="ingreso_mensual">Ingreso mensual</label>
+            <input type="number" id="ingreso_mensual" value="1800000" required />
+          </div>
+
+          <div class="form-group">
+            <label for="antiguedad_cuenta_meses">Antigüedad cuenta (meses)</label>
+            <input type="number" id="antiguedad_cuenta_meses" value="6" required />
+          </div>
+
+          <div class="form-group">
+            <label for="num_transacciones_30d">Transacciones últimos 30 días</label>
+            <input type="number" id="num_transacciones_30d" value="80" required />
+          </div>
+
+          <div class="form-group">
+            <label for="monto_promedio">Monto promedio</label>
+            <input type="number" id="monto_promedio" value="1500000" required />
+          </div>
+
+          <div class="form-group">
+            <label for="dispositivo_nuevo">Dispositivo nuevo</label>
+            <select id="dispositivo_nuevo" required>
+              <option value="0">No</option>
+              <option value="1" selected>Sí</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="ip_compartida">IP compartida</label>
+            <select id="ip_compartida" required>
+              <option value="0">No</option>
+              <option value="1" selected>Sí</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="hora_madrugada">Hora madrugada</label>
+            <select id="hora_madrugada" required>
+              <option value="0">No</option>
+              <option value="1" selected>Sí</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="dispositivo_id">Dispositivo ID</label>
+            <input type="number" id="dispositivo_id" value="12" required />
+          </div>
+
+          <div class="form-group">
+            <label for="ip">IP</label>
+            <input type="text" id="ip" value="192.138.1.2" required />
+          </div>
+
+          <div class="form-group">
+            <label for="comercio_id">Comercio ID</label>
+            <input type="number" id="comercio_id" value="8" required />
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" id="submitBtn" class="primary-btn">
+              Evaluar transacción
+            </button>
+          </div>
+        </form>
+      </section>
+
+      <section class="panel">
+        <div class="panel-header">
+          <h2>Resultado</h2>
+          <p>Interpretación del modelo y del análisis relacional.</p>
+        </div>
+
+        <div id="statusMessage" class="status hidden"></div>
+
+        <div id="resultSection" class="hidden">
+          <div class="risk-banner" id="riskBanner">
+            <div>
+              <span class="risk-label">Riesgo total</span>
+              <h2 id="riesgo_total_text">-</h2>
+            </div>
+            <div class="risk-score-box">
+              <span>Clase final</span>
+              <strong id="riesgo_total_score">-</strong>
+            </div>
+          </div>
+
+          <div class="cards-grid">
+            <div class="info-card">
+              <h3>Resultado del modelo</h3>
+              <div class="metric">
+                <span>Fraude predicho</span>
+                <strong id="fraude_predicho">-</strong>
+              </div>
+              <div class="metric">
+                <span>Probabilidad de fraude</span>
+                <strong id="probabilidad_fraude">-</strong>
+              </div>
+            </div>
+
+            <div class="info-card">
+              <h3>Resultado del grafo</h3>
+              <div class="metric">
+                <span>Usuarios con misma IP</span>
+                <strong id="usuarios_misma_ip">-</strong>
+              </div>
+              <div class="metric">
+                <span>Usuarios con mismo dispositivo</span>
+                <strong id="usuarios_mismo_dispositivo">-</strong>
+              </div>
+              <div class="metric">
+                <span>Riesgo relacional</span>
+                <strong id="riesgo_relacional">-</strong>
+              </div>
+            </div>
+
+            <div class="info-card emphasis">
+              <h3>Resumen ejecutivo</h3>
+              <p id="summaryText">
+                Aquí aparecerá una interpretación general de la transacción.
+              </p>
+            </div>
+          </div>
+
+          <div class="json-panel">
+            <div class="json-panel-header">
+              <h3>Respuesta completa de la API</h3>
+            </div>
+            <pre id="jsonResponse"></pre>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-header">
+          <h2>Historial de consultas</h2>
+          <p>Las últimas transacciones evaluadas aparecen aquí.</p>
+        </div>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>ID Usuario</th>
+                <th>IP</th>
+                <th>Dispositivo</th>
+                <th>Fraude modelo</th>
+                <th>Riesgo relacional</th>
+                <th>Riesgo total</th>
+              </tr>
+            </thead>
+            <tbody id="historyTable">
+              <tr>
+                <td colspan="6" class="empty-row">Aún no hay consultas realizadas.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
