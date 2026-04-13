@@ -3,8 +3,11 @@ import requests
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 
 app = FastAPI(title="API Principal - Detección de Fraude")
+app.mount("/frontend", StaticFiles(directory="frontend"), name="frontend")
 
 app.add_middleware(
     CORSMiddleware,
@@ -14,8 +17,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-MODEL_SERVICE_URL = os.getenv("MODEL_SERVICE_URL", "http://127.0.0.1:8001")
-GRAPH_SERVICE_URL = os.getenv("GRAPH_SERVICE_URL", "http://127.0.0.1:8002")
+MODEL_SERVICE_URL = os.getenv("MODEL_SERVICE_URL", "http://model-service:8001")
+GRAPH_SERVICE_URL = os.getenv("GRAPH_SERVICE_URL", "http://graph-service:8002")
 
 class TransaccionCompleta(BaseModel):
     id_usuario: int
@@ -32,8 +35,8 @@ class TransaccionCompleta(BaseModel):
     comercio_id: int
 
 @app.get("/")
-def inicio():
-    return {"mensaje": "API principal funcionando"}
+def servir_frontend():
+    return FileResponse("frontend/index.html")
 
 @app.post("/predecir")
 def predecir(transaccion: TransaccionCompleta):
